@@ -112,16 +112,46 @@ function playTone(frequency,duration,delay=0,type="sine",volume=0.08){
   }catch(_){}
 }
 
-function playGoodSound(){
-  playTone(660,0.12,0,"sine",0.06);
-  playTone(880,0.16,0.13,"sine",0.06);
+function speakComputer(text, delay=0){
+  if(!("speechSynthesis" in window)) return;
+
+  setTimeout(()=>{
+    try{
+      window.speechSynthesis.cancel();
+
+      const utterance=new SpeechSynthesisUtterance(text);
+      utterance.lang="en-US";
+      utterance.rate=0.92;
+      utterance.pitch=0.75;
+      utterance.volume=1;
+
+      const voices=window.speechSynthesis.getVoices();
+      const preferred=voices.find(v=>
+        /Microsoft David|Microsoft Mark|Google US English|Alex/i.test(v.name) &&
+        /^en(-|_)?US/i.test(v.lang)
+      ) || voices.find(v=>/^en(-|_)?US/i.test(v.lang));
+
+      if(preferred) utterance.voice=preferred;
+      window.speechSynthesis.speak(utterance);
+    }catch(_){}
+  },delay);
 }
 
+/* Normal result: a short "yipee" style ascending chime, then computer voice. */
+function playGoodSound(){
+  playTone(523,0.10,0,"sine",0.07);
+  playTone(659,0.10,0.10,"sine",0.07);
+  playTone(784,0.18,0.20,"sine",0.08);
+  playTone(1047,0.25,0.34,"sine",0.09);
+  speakComputer("Good news!",700);
+}
+
+/* High-net-worth result: exactly three alarm blasts, then computer voice. */
 function playAlertSound(){
-  playTone(880,0.14,0,"square",0.08);
-  playTone(660,0.14,0.18,"square",0.08);
-  playTone(880,0.14,0.36,"square",0.08);
-  playTone(660,0.14,0.54,"square",0.08);
+  playTone(880,0.22,0,"square",0.10);
+  playTone(880,0.22,0.42,"square",0.10);
+  playTone(880,0.22,0.84,"square",0.10);
+  speakComputer("High net-worth client detected!",1_450);
 }
 
 $("client-form").onsubmit=async e=>{

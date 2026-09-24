@@ -1,6 +1,9 @@
-Dad's Client Opportunity Calculator — two-tab event website.
+# Client Opportunity Calculator
 
-New Client: enter information, calculate projection, save.
-Past Clients: search and view saved entries.
+Two-tab event website for entering client information, calculating projected net worth at age 80, saving entries through protected Supabase RPCs, viewing past clients, and exporting the saved list as CSV for Google Sheets.
 
-The database is not exposed directly to the browser; the website uses protected RPC functions and a locally stored device token.
+## Calculation
+Current net worth grows annually to age 80. The life-insurance death benefit is then added at the end. The final amount is used for the $14,000,000 high-net-worth threshold.
+
+## Important
+`config.js` contains the Supabase project URL and publishable browser key. Do not replace it with a service-role key.
