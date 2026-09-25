@@ -14,6 +14,78 @@ const money=n=>new Intl.NumberFormat("en-US",{
 
 const TOKEN_KEY="client_opportunity_device_token";
 
+function showFullScreenResult(high, finalProjection){
+  let overlay=$("full-screen-result");
+  if(!overlay){
+    overlay=document.createElement("div");
+    overlay.id="full-screen-result";
+    overlay.innerHTML=`
+      <div class="result-orbit result-orbit-a"></div>
+      <div class="result-orbit result-orbit-b"></div>
+      <div class="result-particles" aria-hidden="true"></div>
+      <div class="full-screen-result-inner">
+        <div class="result-icon-wrap"><div class="result-icon" id="full-screen-result-icon"></div></div>
+        <div class="full-screen-result-label">CLIENT PROJECTION</div>
+        <h2 id="full-screen-result-title"></h2>
+        <p id="full-screen-result-message"></p>
+        <div class="full-screen-result-number" id="full-screen-result-number">$0</div>
+        <div class="result-status-line" id="result-status-line"></div>
+        <button type="button" id="full-screen-result-close">Return to calculator</button>
+      </div>`;
+    document.body.appendChild(overlay);
+    $("full-screen-result-close").onclick=()=>{
+      overlay.classList.remove("show");
+      document.body.classList.remove("result-active");
+    };
+  }
+
+  const icon=$("full-screen-result-icon");
+  const particles=overlay.querySelector(".result-particles");
+  particles.innerHTML="";
+  for(let i=0;i<24;i++){
+    const dot=document.createElement("span");
+    dot.style.setProperty("--x",`${Math.round(Math.random()*100)}%`);
+    dot.style.setProperty("--y",`${Math.round(Math.random()*100)}%`);
+    dot.style.setProperty("--delay",`${(Math.random()*1.1).toFixed(2)}s`);
+    dot.style.setProperty("--size",`${3+Math.round(Math.random()*7)}px`);
+    particles.appendChild(dot);
+  }
+
+  overlay.className=`full-screen-result ${high?"full-screen-high":"full-screen-good"}`;
+  icon.textContent=high?"!":"✓";
+  $("full-screen-result-title").textContent=high
+    ? "High net worth client detected!"
+    : "Good news!";
+  $("full-screen-result-message").textContent=high
+    ? "This client has a projected net worth above the high-net-worth threshold."
+    : "Talk to the host for a special opportunity available to only a select few... including you!";
+  $("result-status-line").textContent=high
+    ? "HIGH-NET-WORTH THRESHOLD EXCEEDED"
+    : "SPECIAL OPPORTUNITY QUALIFICATION";
+
+  const numberEl=$("full-screen-result-number");
+  numberEl.textContent=money(0);
+  document.body.classList.add("result-active");
+
+  requestAnimationFrame(()=>{
+    overlay.classList.add("show");
+    animateResultNumber(numberEl, finalProjection);
+  });
+}
+
+function animateResultNumber(el,target){
+  const duration=1200;
+  const start=performance.now();
+  const ease=t=>1-Math.pow(1-t,3);
+
+  function frame(now){
+    const progress=Math.min(1,(now-start)/duration);
+    el.textContent=money(target*ease(progress));
+    if(progress<1) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
 function token(){
   let t=localStorage.getItem(TOKEN_KEY);
   if(!t){
@@ -208,6 +280,8 @@ $("client-form").onsubmit=async e=>{
          <span>Growth projection at age 80: ${money(growthProjection)}</span>
          <span>Life insurance added at the end: ${money(death)}</span>
          <small>Final projected net worth: ${money(finalProjection)}</small>`;
+
+    showFullScreenResult(high,finalProjection);
 
     if(high) playAlertSound();
     else playGoodSound();
